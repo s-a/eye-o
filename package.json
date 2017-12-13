@@ -48,7 +48,8 @@
       "package.json"
     ],
     "dmg": {
-      "contents": [{
+      "contents": [
+        {
           "x": 130,
           "y": 220
         },
@@ -194,6 +195,7 @@
     "devtron": "^1.4.0",
     "electron-debug": "^1.2.0",
     "electroner": "^4.0.5",
+    "file-icons-js": "^1.0.3",
     "font-awesome": "^4.7.0",
     "glob": "^7.1.2",
     "history": "^4.6.3",
