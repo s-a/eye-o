@@ -1,14 +1,12 @@
 // @flow
 import React, { Component } from 'react';
 import { Link } from 'react-router-dom';
-import SplitPane from 'react-split-pane';
 import Mousetrap from 'mousetrap';
 
-import icons from 'file-icons-js'
-import $ from 'jquery'
+import icons from 'file-icons-js';
+import $ from 'jquery';
 
-
-let glob = require('glob');
+const glob = require('glob');
 
 class Home extends Component {
 
@@ -45,56 +43,55 @@ class Home extends Component {
     ]
   }
   componentDidMount() {
-    const self = this
-    Mousetrap.bind('down', function (e) {
-      self.focusNextElement()
+    const self = this;
+    Mousetrap.bind('down', (e) => {
+      self.focusNextElement();
       return false;
     });
-    Mousetrap.bind('up', function (e) {
-      self.focusPreviousElement()
+    Mousetrap.bind('up', (e) => {
+      self.focusPreviousElement();
       return false;
     });
-    this.changeActiveTabIndex(0, this.state.areas[0], 1)
-    this.changeActiveTabIndex(1, this.state.areas[1], 0)
+    this.changeActiveTabIndex(0, this.state.areas[0], 1);
+    this.changeActiveTabIndex(1, this.state.areas[1], 0);
 
-    $('.file-system-view').css({ 'height': ($(window).height() - 20) + 'px' });
-    $(window).resize(function () { // On resize
-      $('.file-system-view').css({ 'height': ($(window).height() - 20) + 'px' });
+    $('.file-system-view').css({ height: `${$(window).height() - 180}px` });
+    $(window).resize(() => { // On resize
+      $('.file-system-view').css({ height: `${$(window).height() - 180}px` });
     });
-
   }
 
   focusNextElement(current) {
-    //add all elements we want to include in our selection
-    var x = $(document.activeElement)
-    x.next().focus()
+    // add all elements we want to include in our selection
+    let x = $(document.activeElement);
+    x.next().focus();
   }
 
   focusPreviousElement(current) {
-    //add all elements we want to include in our selection
-    var x = $(document.activeElement)
-    x.prev().focus()
+    // add all elements we want to include in our selection
+    let x = $(document.activeElement);
+    x.prev().focus();
   }
 
   changeActiveTabIndex(areaIndex, area, newActiveIndex) {
-    let newState = this.state;
+    const newState = this.state;
     newState.areas[areaIndex].activeIndex = newActiveIndex;
     newState.areas[areaIndex].contents.directories = [];
     this.setState(newState);
-    let dir = `${newState.areas[areaIndex].locations[newActiveIndex]}`;
+    const dir = `${newState.areas[areaIndex].locations[newActiveIndex]}`;
 
-    let fs = require('fs');
-    let getDirs = function (rootDir, cb) {
+    const fs = require('fs');
+    const getDirs = function (rootDir, cb) {
       fs.readdir(rootDir, (err, files) => {
-        let dirs = ['..'];
-        let filenames = [];
+        const dirs = ['..'];
+        const filenames = [];
         for (let index = 0; index < files.length; ++index) {
-          let file = files[index];
+          const file = files[index];
           if (file[0] !== '.') {
-            let filePath = `${rootDir}/${file}`;
+            const filePath = `${rootDir}/${file}`;
             fs.stat(filePath, function (err, stat) {
               if (err) {
-                console.warn(`error getting stats of ${file}`)
+                console.warn(`error getting stats of ${file}`);
               } else {
                 if (stat.isDirectory()) {
                   dirs.push(this.file);
@@ -118,12 +115,14 @@ class Home extends Component {
   }
 
   renderTabs(areaIndex, area) {
-    let tabs = [];
+    const tabs = [];
     for (let index = 0; index < area.locations.length; index++) {
       const location = area.locations[index].split('/').pop();
       tabs.push(
         <li key={index} className="tab" >
-          <span onClick={() => this.changeActiveTabIndex(areaIndex, area, index)} className={index === area.activeIndex ? 'tab-active' : null} >{location}</span>
+          <span onClick={() => this.changeActiveTabIndex(areaIndex, area, index)} className={index === area.activeIndex ? 'tab-active' : null} >
+            {location}/
+          </span>
         </li>
       );
     }
@@ -133,31 +132,40 @@ class Home extends Component {
   }
 
   renderArea(areaIndex, area) {
-    const files = []
+    const files = [];
     const filename = 'README.md';
 
     for (let d = 0; d < area.contents.directories.length; d++) {
       const dir = area.contents.directories[d];
       const className = 'folder';
       files.push(
-        <a key={areaIndex + dir} className={"filesystem-item"} href="#">
-          <span className={className} /> <span className={'filesystem-item-name dark-yellow'}>{dir}</span>
+        <a key={areaIndex + dir} className={'filesystem-item dark-yellow'} href="#">
+          <span className={className} /> <span className={'filesystem-item-name'}>{dir}</span>
         </a>
       );
     }
     for (let f = 0; f < area.contents.files.length; f++) {
       const fn = area.contents.files[f];
       const className = icons.getClassWithColor(fn);
-      var colorClassName = (className || '').split(" ")
+      let colorClassName = (className || '').split(' ');
       if (colorClassName.length === 2) {
-
-        colorClassName = colorClassName.pop()
+        colorClassName = colorClassName.pop();
       } else {
-        colorClassName = ''
+        colorClassName = '';
       }
       files.push(
-        <a key={areaIndex + fn} className={"filesystem-item"} href="#">
-          <span className={className} /> <span className={'filesystem-item-name ' + colorClassName}>{fn}</span>
+        <a key={areaIndex + fn} className={'filesystem-item ' + colorClassName} href="#">
+          <div className="row">
+            <div className="col-xs-6">
+              <span className={className} /> <span className={'filesystem-item-name'}>{fn}</span>
+            </div>
+            <div className="col-xs-3">
+              <span className={'filesystem-item-name'}>{'123 kb'}</span>
+            </div>
+            <div className="col-xs-3">
+              <span className={'filesystem-item-name'}>{'01.12.2019'}</span>
+            </div>
+          </div>
         </a>
       );
     }
@@ -167,29 +175,38 @@ class Home extends Component {
   }
 
   render() {
-
     return (
 
-      <SplitPane
-        split="vertical"
-        defaultSize={50}
-        allowResize
-        defaultSize={parseInt(localStorage.getItem('splitPos'), 10)}
-        onChange={size => localStorage.setItem('splitPos', size)}
-      >
-        <div>
-          {this.renderTabs(0, this.state.areas[0])}
-          <div className="file-system-view">
-            {this.renderArea(0, this.state.areas[0])}
+      <div className="container">
+
+        <div className="row">
+          <div className="col-sm-6">
+            {this.renderTabs(0, this.state.areas[0])}
+            <div className="file-system-view">
+              {this.renderArea(0, this.state.areas[0])}
+            </div>
+          </div>
+          <div className="col-sm-6">
+            {this.renderTabs(1, this.state.areas[1])}
+            <div className="file-system-view">
+              {this.renderArea(1, this.state.areas[1])}
+            </div>
           </div>
         </div>
-        <div>
-          {this.renderTabs(1, this.state.areas[1])}
-          <div className="file-system-view">
-            {this.renderArea(1, this.state.areas[1])}
+        <div className="row vbottom">
+          <div className="col-sm-6 vbottom">
+            Bottom DIV
+          </div>
+          <div className="col-sm-6 vbottom">
+            Bottom DIV
           </div>
         </div>
-      </SplitPane>
+        <div className="row vbottom">
+          <div className="col-sm-12 vbottom">
+            Bottom DIV
+          </div>
+        </div>
+      </div>
 
     );
   }

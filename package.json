@@ -192,6 +192,7 @@
     "webpack-merge": "^4.1.0"
   },
   "dependencies": {
+    "bootstrap": "^3.3.7",
     "devtron": "^1.4.0",
     "electron-debug": "^1.2.0",
     "electroner": "^4.0.5",
@@ -208,7 +209,6 @@
     "react-router": "^4.1.1",
     "react-router-dom": "^4.1.1",
     "react-router-redux": "^5.0.0-alpha.6",
-    "react-split-pane": "^0.1.71",
     "redux": "^3.7.1",
     "redux-thunk": "^2.2.0",
     "roboto-fontface": "^0.8.0",

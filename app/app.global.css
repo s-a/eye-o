@@ -1,4 +1,7 @@
 @import "~font-awesome/css/font-awesome.css";
+@import '~file-icons-js/css/style.css';
+@import '~roboto-fontface/css/roboto/roboto-fontface.css';
+@import '~bootstrap/dist/css/bootstrap.min.css';
 * {
   margin: 0;
   padding: 0;
@@ -46,9 +49,14 @@
   background: transparent;
 }
 
+.container {
+  padding: 0;
+  margin: 22px;
+}
+
 body,
 html {
-  background-color: #222;
+  background-color: #222 !important;
   width: 100%;
   height: 100%;
   font-family: 'Roboto', sans-serif;
@@ -68,10 +76,24 @@ a {
 
 .filesystem-item {
   display: block;
+  white-space: nowrap;
+  text-decoration: none;
+  border-radius: 2px;
+}
+
+.filesystem-item:hover {
+  background-color: #296BB2 !important;
+  color: ghostwhite;
+  text-decoration: none;
+}
+
+.filesystem-item:focus {
+  background-color: #0D3866;
+  color: ghostwhite;
+  text-decoration: none;
 }
 
 .filesystem-item-name {
-  margin-left: 3px;
   display: inline-block;
 }
 
@@ -86,68 +108,22 @@ a {
 }
 
 .tab {
-  color: white;
+  color: #0D3866;
   cursor: pointer;
+  font-weight: bold;
+}
+
+.tab:hover {
+  color: ghostwhite;
 }
 
 .tab-active {
-  color: red;
+  font-weight: bolder;
+  color: #296BB2;
 }
 
 .area {
   clear: both;
-}
-
-.Resizer {
-  background: #000;
-  opacity: 0.2;
-  z-index: 1;
-  -moz-box-sizing: border-box;
-  -webkit-box-sizing: border-box;
-  box-sizing: border-box;
-  -moz-background-clip: padding;
-  -webkit-background-clip: padding;
-  background-clip: padding-box;
-}
-
-.Resizer:hover {
-  -webkit-transition: all 2s ease;
-  transition: all 2s ease;
-}
-
-.Resizer.horizontal {
-  height: 11px;
-  margin: -5px 0;
-  border-top: 5px solid rgba(255, 255, 255, 0);
-  border-bottom: 5px solid rgba(255, 255, 255, 0);
-  cursor: row-resize;
-  width: 100%;
-}
-
-.Resizer.horizontal:hover {
-  border-top: 5px solid rgba(0, 0, 0, 0.5);
-  border-bottom: 5px solid rgba(0, 0, 0, 0.5);
-}
-
-.Resizer.vertical {
-  width: 11px;
-  margin: 0 -5px;
-  border-left: 5px solid rgba(255, 255, 255, 0);
-  border-right: 5px solid rgba(255, 255, 255, 0);
-  cursor: col-resize;
-}
-
-.Resizer.vertical:hover {
-  border-left: 5px solid rgba(0, 0, 0, 0.5);
-  border-right: 5px solid rgba(0, 0, 0, 0.5);
-}
-
-.Resizer.disabled {
-  cursor: not-allowed;
-}
-
-.Resizer.disabled:hover {
-  border-color: transparent;
 }
 
 .folder {
@@ -158,12 +134,12 @@ a {
   margin: 0 auto;
   margin-top: 50px;
   position: relative;
-  background-color: #e2c000;
+  background-color: #717F10;
   border-radius: 0 6px 6px 6px;
   box-shadow: 4px 4px 7px rgba(0, 0, 0, 0.59);
 }
 
-.folder:before {
+.folder::before {
   content: '';
   width: 50%;
   height: 12px;
@@ -173,12 +149,6 @@ a {
   top: -12px;
   left: 0px;
 }
-
-@import url('./../node_modules/file-icons-js/css/style.css')
-/**/
-
-@import url('./../node_modules/roboto-fontface/css/roboto/roboto-fontface.css')
-/**/
 
 .light-red {
   color: #c97071;
