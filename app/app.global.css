@@ -1,70 +1,18 @@
-@import "~font-awesome/css/font-awesome.css";
-@import '~file-icons-js/css/style.css';
-@import '~roboto-fontface/css/roboto/roboto-fontface.css';
-@import '~bootstrap/dist/css/bootstrap.min.css';
-@import '~xterm/dist/xterm.css';
 * {
   margin: 0;
   padding: 0;
 }
 
+@import "~font-awesome/css/font-awesome.css";
+@import '~file-icons-js/css/style.css';
+@import '~roboto-fontface/css/roboto/roboto-fontface.css';
+@import '~bootstrap/dist/css/bootstrap.min.css';
+@import '~xterm/dist/xterm.css';
+@import 'terminal.css';
+@import 'colors.css';
+@import 'scrollbar.css';
 *:focus {
   outline: none;
-}
-
-::-webkit-scrollbar {
-  width: 11px;
-  height: 11px;
-}
-
-::-webkit-scrollbar-button {
-  width: 44px;
-  height: 44px;
-}
-
-::-webkit-scrollbar-thumb {
-  background: #e1e1e1;
-  border: 0px inset #ffffff;
-  border-radius: 49px;
-}
-
-::-webkit-scrollbar-thumb:hover {
-  background: #ffffff;
-}
-
-::-webkit-scrollbar-thumb:active {
-  background: #1a1a1a;
-}
-
-::-webkit-scrollbar-track {
-  background: #969696;
-  border: 1px none #000000;
-  border-radius: 0px;
-}
-
-::-webkit-scrollbar-track:hover {
-  background: #666666;
-}
-
-::-webkit-scrollbar-track:active {
-  background: #333333;
-}
-
-::-webkit-scrollbar-corner {
-  background: transparent;
-}
-
-#terminal {
-  height: 110px;
-}
-
-#terminal-input {
-  background-color: #000;
-  color: ghostwhite;
-  border: 0;
-  font-family: courier-new, courier, monospace;
-  font-feature-settings: "liga" 0;
-  width: 100%;
 }
 
 body,
@@ -74,7 +22,6 @@ html {
   height: 100%;
   font-family: 'Roboto', sans-serif;
   font-size: 14px;
-  overflow: hidden;
 }
 
 a {
@@ -96,13 +43,13 @@ a {
 }
 
 .filesystem-item:hover {
-  background-color: #296BB2 !important;
+  background-color: #296bb2 !important;
   color: ghostwhite;
   text-decoration: none;
 }
 
 .filesystem-item:focus {
-  background-color: #0D3866;
+  background-color: #0d3866;
   color: ghostwhite;
   text-decoration: none;
 }
@@ -122,25 +69,25 @@ a {
 }
 
 .tab {
-  color: #0D3866;
+  color: #0d3866;
   cursor: pointer;
   font-weight: bold;
 }
 
 .tab:hover {
-  color: ghostwhite;
+  text-decoration: underline;
 }
 
 .tab-active {
   font-weight: bolder;
-  color: #296BB2;
+  color: #296bb2;
 }
 
 .area {
   clear: both;
 }
 
-.folder {
+.folder-icon {
   display: inline-block;
   width: 150px;
   height: 105px;
@@ -148,7 +95,7 @@ a {
   margin: 0 auto;
   margin-top: 50px;
   position: relative;
-  background-color: #717F10;
+  background-color: #717f10;
   border-radius: 0 6px 6px 6px;
   box-shadow: 4px 4px 7px rgba(0, 0, 0, 0.59);
 }
@@ -161,117 +108,5 @@ a {
   background-color: #708090;
   position: absolute;
   top: -12px;
-  left: 0px;
-}
-
-.light-red {
-  color: #c97071;
-}
-
-.medium-red {
-  color: #ac4142;
-}
-
-.dark-red {
-  color: #742c2d;
-}
-
-.light-green {
-  color: #a6ba7b;
-}
-
-.medium-green {
-  color: #90a959;
-}
-
-.dark-green {
-  color: #66783e;
-}
-
-.light-yellow {
-  color: #fae0bc;
-}
-
-.medium-yellow {
-  color: #ee9e2e;
-}
-
-.dark-yellow {
-  color: #d88511;
-}
-
-.light-blue {
-  color: #6098b0;
-}
-
-.medium-blue {
-  color: #6a9fb5;
-}
-
-.dark-blue {
-  color: #46788d;
-}
-
-.light-maroon {
-  color: #be7953;
-}
-
-.medium-maroon {
-  color: #8f5536;
-}
-
-.dark-maroon {
-  color: #573421;
-}
-
-.light-purple {
-  color: #c7a4c0;
-}
-
-.medium-purple {
-  color: #aa759f;
-}
-
-.dark-purple {
-  color: #825078;
-}
-
-.light-orange {
-  color: #d99762;
-}
-
-.medium-orange {
-  color: #d28445;
-}
-
-.dark-orange {
-  color: #a35f27;
-}
-
-.light-cyan {
-  color: #6bb0a4;
-}
-
-.medium-cyan {
-  color: #75b5aa;
-}
-
-.dark-cyan {
-  color: #4d9085;
-}
-
-.light-pink {
-  color: #ff4ddb;
-}
-
-.medium-pink {
-  color: #ff00cc;
-}
-
-.dark-pink {
-  color: #b3008f;
-}
-
-.theme-colour-check {
-  background: #ffffff;
+  left: 0;
 }

@@ -1,0 +1,16 @@
+.terminal-container {
+  display: none;
+}
+
+#terminal {
+  height: 140px;
+}
+
+#terminal-input {
+  background-color: #000;
+  color: ghostwhite;
+  border: 0;
+  font-family: courier-new, courier, monospace;
+  font-feature-settings: "liga" 0;
+  width: 100%;
+}
