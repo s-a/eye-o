@@ -60,6 +60,8 @@ a {
 
 .tabs {
   width: 100%;
+  margin-top: 11px;
+  height: 20px;
 }
 
 .tabs li {
@@ -81,6 +83,11 @@ a {
 .tab-active {
   font-weight: bolder;
   color: #296bb2;
+}
+
+.location {
+  clear: both;
+  height: 20px;
 }
 
 .area {

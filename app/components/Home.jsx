@@ -27,7 +27,7 @@ function formatDate(date) {
 
 
 const fitHeight = function fitHeight(el) {
-  let total = $('.terminal-container-header').outerHeight() + 40;
+  let total = $('.terminal-container-header').outerHeight() + 50;
   if ($('.terminal-container:visible').length !== 0) {
     total += $('.terminal-container:visible').outerHeight() + 80;
   }
@@ -298,12 +298,14 @@ class Home extends Component {
         <div className="row">
           <div className="col-sm-6">
             {this.renderTabs(0, this.state.areas[0])}
+            <div className="location">{this.state.areas[0].locations[this.state.areas[0].activeIndex]}</div>
             <div className="file-system-view">
               {this.renderArea(0, this.state.areas[0])}
             </div>
           </div>
           <div className="col-sm-6">
             {this.renderTabs(1, this.state.areas[1])}
+            <div className="location">{this.state.areas[1].locations[this.state.areas[1].activeIndex]}</div>
             <div className="file-system-view">
               {this.renderArea(1, this.state.areas[1])}
             </div>
