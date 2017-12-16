@@ -23,6 +23,7 @@
     "package-all": "npm run build && build -mwl",
     "package-linux": "npm run build && build --linux",
     "package-win": "npm run build && build --win --x64",
+    "rebuild-electron-native-modules": "node_modules/.bin/electron-rebuild ./app",
     "postinstall": "concurrently \"npm run flow-typed\" \"npm run build-dll\" \"electron-builder install-app-deps\" \"node node_modules/fbjs-scripts/node/check-dev-engines.js package.json\"",
     "prestart": "npm run build",
     "start": "cross-env NODE_ENV=production electron ./app/",
@@ -48,8 +49,7 @@
       "package.json"
     ],
     "dmg": {
-      "contents": [
-        {
+      "contents": [{
           "x": 130,
           "y": 220
         },
@@ -147,6 +147,7 @@
     "electron": "^1.6.10",
     "electron-builder": "^19.8.0",
     "electron-devtools-installer": "^2.2.0",
+    "electron-rebuild": "^1.6.0",
     "enzyme": "^2.9.1",
     "enzyme-to-json": "^1.5.1",
     "eslint": "^3.19.0",
@@ -212,7 +213,8 @@
     "redux": "^3.7.1",
     "redux-thunk": "^2.2.0",
     "roboto-fontface": "^0.8.0",
-    "source-map-support": "^0.4.15"
+    "source-map-support": "^0.4.15",
+    "xterm": "^2.9.2"
   },
   "devEngines": {
     "node": ">=7.x",

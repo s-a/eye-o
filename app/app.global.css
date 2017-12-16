@@ -2,9 +2,14 @@
 @import '~file-icons-js/css/style.css';
 @import '~roboto-fontface/css/roboto/roboto-fontface.css';
 @import '~bootstrap/dist/css/bootstrap.min.css';
+@import '~xterm/dist/xterm.css';
 * {
   margin: 0;
   padding: 0;
+}
+
+*:focus {
+  outline: none;
 }
 
 ::-webkit-scrollbar {
@@ -34,7 +39,7 @@
 ::-webkit-scrollbar-track {
   background: #969696;
   border: 1px none #000000;
-  border-radius: 49px;
+  border-radius: 0px;
 }
 
 ::-webkit-scrollbar-track:hover {
@@ -49,9 +54,17 @@
   background: transparent;
 }
 
-.container {
-  padding: 0;
-  margin: 22px;
+#terminal {
+  height: 110px;
+}
+
+#terminal-input {
+  background-color: #000;
+  color: ghostwhite;
+  border: 0;
+  font-family: courier-new, courier, monospace;
+  font-feature-settings: "liga" 0;
+  width: 100%;
 }
 
 body,
@@ -61,6 +74,7 @@ html {
   height: 100%;
   font-family: 'Roboto', sans-serif;
   font-size: 14px;
+  overflow: hidden;
 }
 
 a {

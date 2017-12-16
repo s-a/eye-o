@@ -2,11 +2,17 @@
 import React, { Component } from 'react';
 import { Link } from 'react-router-dom';
 import Mousetrap from 'mousetrap';
-
+import Terminal from 'xterm';
 import icons from 'file-icons-js';
 import $ from 'jquery';
+var pty = require('node-pty');
 
+
+
+var xterm = new Terminal()
 const glob = require('glob');
+// Notice it's called statically on the type, not an object
+Terminal.loadAddon('fit');
 
 class Home extends Component {
 
@@ -58,7 +64,60 @@ class Home extends Component {
     $('.file-system-view').css({ height: `${$(window).height() - 180}px` });
     $(window).resize(() => { // On resize
       $('.file-system-view').css({ height: `${$(window).height() - 180}px` });
+
     });
+
+
+    var terminalContainer = document.getElementById('terminal')
+    var terminalInput = document.getElementById('terminal-input')
+    $(terminalInput).keydown(function (e) {
+      if (e.keyCode == 13) {
+        var txt = terminalInput.value
+        term.write(txt + '\r\n');
+
+      }
+    })
+
+    xterm.open(terminalContainer);
+
+    setTimeout(() => {
+
+      xterm.fit();
+    }, 200);
+
+    var term = pty.spawn(process.platform === 'win32' ? 'cmd.exe' : 'bash', [], {
+      name: 'xterm-color',
+      cols: 180,
+      rows: 80,
+      cwd: process.env.PWD,
+      env: process.env
+    });
+    term.on('data', function (data) {
+      console.log(data);
+      xterm.write(data)
+    });
+
+    term.on('key', function (key, ev) {
+
+      var printable = (!ev.altKey && !ev.altGraphKey && !ev.ctrlKey && !ev.metaKey);
+
+      if (ev.keyCode == 13) {
+        term.prompt();
+      } else if (ev.keyCode == 8) {
+        // Do not delete the prompt
+        if (term.x > 2) {
+          term.write('\b \b');
+        }
+      } else if (printable) {
+        term.write(key);
+      }
+    });
+
+
+    term.write('cd c:\\temp\r\n');
+
+
+
   }
 
   focusNextElement(current) {
@@ -177,7 +236,7 @@ class Home extends Component {
   render() {
     return (
 
-      <div className="container">
+      <div className="container-fluid">
 
         <div className="row">
           <div className="col-sm-6">
@@ -203,7 +262,8 @@ class Home extends Component {
         </div>
         <div className="row vbottom">
           <div className="col-sm-12 vbottom">
-            Bottom DIV
+            <div id="terminal"></div>
+            <input type="text" id="terminal-input" />
           </div>
         </div>
       </div>
