@@ -195,6 +195,7 @@
   },
   "dependencies": {
     "bootstrap": "^3.3.7",
+    "bytes": "^3.0.0",
     "devtron": "^1.4.0",
     "electron-debug": "^1.2.0",
     "electroner": "^4.0.5",

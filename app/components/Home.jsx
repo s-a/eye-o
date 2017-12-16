@@ -5,12 +5,26 @@ import Mousetrap from 'mousetrap';
 import Terminal from 'xterm';
 import icons from 'file-icons-js';
 import $ from 'jquery';
-
+var bytes = require('bytes');
 const pty = require('node-pty');
 
 const xterm = new Terminal();
 // Notice it's called statically on the type, not an object
 Terminal.loadAddon('fit');
+
+
+function formatDate(date) {
+  if (!date) return ''
+  var hours = date.getHours();
+  var minutes = date.getMinutes();
+  var ampm = hours >= 12 ? 'pm' : 'am';
+  hours = hours % 12;
+  hours = hours ? hours : 12; // the hour '0' should be '12'
+  minutes = minutes < 10 ? '0' + minutes : minutes;
+  var strTime = hours + ':' + minutes + ' ' + ampm;
+  return date.toLocaleString();
+}
+
 
 const fitHeight = function fitHeight(el) {
   let total = $('.terminal-container-header').outerHeight() + 40;
@@ -60,6 +74,7 @@ class Home extends Component {
       }
     ]
   }
+
   componentDidMount() {
     const self = this;
     Mousetrap.bind('down', (e) => {
@@ -191,13 +206,16 @@ class Home extends Component {
               if (err) {
                 console.warn(`error getting stats of ${file}`);
               } else {
+
+                stat.name = this.file
+                stat.fullpath = filePath
                 if (stat.isDirectory()) {
-                  dirs.push(this.file);
+                  dirs.push(stat);
                 } else {
-                  filenames.push(this.file);
+                  filenames.push(stat);
                 }
                 if (files.length === (this.index + 1)) {
-                  return cb({ directories: dirs.sort(), files: filenames.sort() });
+                  return cb({ directories: dirs, files: filenames });
                 }
               }
             }.bind({ index, file }));
@@ -237,14 +255,14 @@ class Home extends Component {
       const dir = area.contents.directories[d];
       const className = 'folder-icon';
       files.push(
-        <a key={areaIndex + dir} className={'filesystem-item folder'} href="#">
-          <span className={className} /> <span className={'filesystem-item-name'}>{dir}</span>
+        <a key={areaIndex + dir.name} className={'filesystem-item folder'} href="#">
+          <span className={className} /> <span className={'filesystem-item-name'}>{dir.name}</span>
         </a>
       );
     }
     for (let f = 0; f < area.contents.files.length; f++) {
-      const fn = area.contents.files[f];
-      const className = icons.getClassWithColor(fn);
+      const file = area.contents.files[f];
+      const className = icons.getClassWithColor(file.name);
       let colorClassName = (className || '').split(' ');
       if (colorClassName.length === 2) {
         colorClassName = colorClassName.pop();
@@ -252,16 +270,16 @@ class Home extends Component {
         colorClassName = '';
       }
       files.push(
-        <a key={areaIndex + fn} className={`filesystem-item ${colorClassName}`} href="#">
+        <a key={areaIndex + file.name} className={`filesystem-item ${colorClassName}`} href="#">
           <div className="row">
-            <div className="col-xs-6">
-              <span className={className} /> <span className={'filesystem-item-name'}>{fn}</span>
+            <div className="col-xs-7">
+              <span className={className} /> <span className={'filesystem-item-name'}>{file.name}</span>
+            </div>
+            <div className="col-xs-2 text-right">
+              <span className={'filesystem-item-name'}>{bytes(file.size, { unitSeparator: ' ' })}</span>
             </div>
             <div className="col-xs-3">
-              <span className={'filesystem-item-name'}>{'123 kb'}</span>
-            </div>
-            <div className="col-xs-3">
-              <span className={'filesystem-item-name'}>{'01.12.2019'}</span>
+              <span className={'filesystem-item-name'}>{formatDate(file.mtime)}</span>
             </div>
           </div>
         </a>
