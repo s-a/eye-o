@@ -7,6 +7,7 @@ import icons from 'file-icons-js';
 import $ from 'jquery';
 var bytes = require('bytes');
 const pty = require('node-pty');
+var event2string = require('key-event-to-string')()
 
 const xterm = new Terminal();
 // Notice it's called statically on the type, not an object
@@ -23,6 +24,48 @@ function formatDate(date) {
   minutes = minutes < 10 ? '0' + minutes : minutes;
   var strTime = hours + ':' + minutes + ' ' + ampm;
   return date.toLocaleString();
+}
+
+function capitalizeFirstLetter(string) {
+  return string.charAt(0).toUpperCase() + string.slice(1);
+}
+
+let showKeyInfoTimeout
+let showKeyInfoRepeats = 0
+let showKeyInfoHistory
+function showKeyInfo(e) {
+  debugger
+
+  var keys
+  if (typeof e === 'string') {
+    keys = e.split(' ');
+    for (let i = 0; i < keys.length; i++) {
+      const key = keys[i];
+      if (key.length > 1) {
+        keys[i] = capitalizeFirstLetter(key)
+      }
+    }
+    keys = keys.join(' ')
+
+  } else {
+    keys = event2string(e)
+  }
+  if (showKeyInfoHistory === keys) {
+    showKeyInfoRepeats++;
+  } else {
+    showKeyInfoRepeats = 0
+  }
+  showKeyInfoHistory = keys
+  clearTimeout(showKeyInfoTimeout)
+  const nfo = $('#key-press-info')
+  let prefix = ''
+  if (showKeyInfoRepeats > 0) {
+    prefix = showKeyInfoRepeats + ' x '
+  }
+  nfo.stop(true).text(prefix + keys).fadeIn(0)
+  showKeyInfoTimeout = setTimeout(function () {
+    nfo.fadeOut(1000)
+  }, 1400)
 }
 
 
@@ -75,16 +118,38 @@ class Home extends Component {
     ]
   }
 
+  location(areaIndex) {
+    return this.state.areas[areaIndex].locations[this.state.areas[areaIndex].activeIndex]
+  }
   componentDidMount() {
     const self = this;
+
+    Mousetrap.bind('s f up', function (e) {
+      showKeyInfo('s f up')
+      return false;
+    });
+    Mousetrap.bind('s f down', function (e) {
+      showKeyInfo('s f down')
+      return false;
+    });
+
     Mousetrap.bind('down', (e) => {
+      showKeyInfo(e)
       self.focusNextElement();
       return false;
     });
     Mousetrap.bind('up', (e) => {
+      showKeyInfo(e)
       self.focusPreviousElement();
       return false;
     });
+
+    Mousetrap.bind(['command+s', 'ctrl+s'], function (e) {
+      showKeyInfo(e)
+      self.showTerminal(true)
+      return false;
+    });
+
     this.changeActiveTabIndex(0, this.state.areas[0], 1);
     this.changeActiveTabIndex(1, this.state.areas[1], 0);
 
@@ -100,12 +165,15 @@ class Home extends Component {
 
     $(terminalInput).keydown((e) => {
       if (e.keyCode === 13) {
+        showKeyInfo(e)
         const txt = terminalInput.value;
         term.write(`${txt}\r\n`);
         terminalInput.value = '';
       }
       if (e.keyCode === 27) {
+        showKeyInfo(e)
         self.showTerminal(false)
+
       }
     });
     $(terminalInput).blur((e) => {
@@ -298,14 +366,14 @@ class Home extends Component {
         <div className="row">
           <div className="col-sm-6">
             {this.renderTabs(0, this.state.areas[0])}
-            <div className="location">{this.state.areas[0].locations[this.state.areas[0].activeIndex]}</div>
+            <div className="location">{this.location(0)}</div>
             <div className="file-system-view">
               {this.renderArea(0, this.state.areas[0])}
             </div>
           </div>
           <div className="col-sm-6">
             {this.renderTabs(1, this.state.areas[1])}
-            <div className="location">{this.state.areas[1].locations[this.state.areas[1].activeIndex]}</div>
+            <div className="location">{this.location(1)}</div>
             <div className="file-system-view">
               {this.renderArea(1, this.state.areas[1])}
             </div>
@@ -329,6 +397,9 @@ class Home extends Component {
             <div id="terminal" />
             <input type="text" id="terminal-input" />
           </div>
+        </div>
+        <div id="key-press-info" className="center">
+          <h1>afasf</h1>
         </div>
       </div>
 

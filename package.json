@@ -203,6 +203,7 @@
     "font-awesome": "^4.7.0",
     "history": "^4.6.3",
     "jquery": "^3.2.1",
+    "key-event-to-string": "^1.1.1",
     "mousetrap": "^1.6.1",
     "react": "^15.6.1",
     "react-dom": "^15.6.1",
