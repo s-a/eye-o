@@ -58,6 +58,8 @@ a {
   display: inline-block;
 }
 
+.filesystem-item-size {}
+
 .tabs {
   width: 100%;
   margin-top: 11px;
@@ -85,9 +87,18 @@ a {
   color: #296bb2;
 }
 
-.location {
+.location-bar {
   clear: both;
   height: 20px;
+  background-color: #16262C;
+  color: ghostwhite;
+}
+
+.footer-bar {
+  clear: both;
+  height: 20px;
+  background-color: #16262C;
+  color: ghostwhite;
 }
 
 .area {

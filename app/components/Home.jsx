@@ -5,6 +5,7 @@ import Mousetrap from 'mousetrap';
 import Terminal from 'xterm';
 import icons from 'file-icons-js';
 import $ from 'jquery';
+const path = require('path')
 var bytes = require('bytes');
 const pty = require('node-pty');
 var event2string = require('key-event-to-string')()
@@ -15,15 +16,7 @@ Terminal.loadAddon('fit');
 
 
 function formatDate(date) {
-  if (!date) return ''
-  var hours = date.getHours();
-  var minutes = date.getMinutes();
-  var ampm = hours >= 12 ? 'pm' : 'am';
-  hours = hours % 12;
-  hours = hours ? hours : 12; // the hour '0' should be '12'
-  minutes = minutes < 10 ? '0' + minutes : minutes;
-  var strTime = hours + ':' + minutes + ' ' + ampm;
-  return date.toLocaleString();
+  return (date || '').toLocaleString().replace(/,/g, ' ');
 }
 
 function capitalizeFirstLetter(string) {
@@ -34,8 +27,6 @@ let showKeyInfoTimeout
 let showKeyInfoRepeats = 0
 let showKeyInfoHistory
 function showKeyInfo(e) {
-  debugger
-
   var keys
   if (typeof e === 'string') {
     keys = e.split(' ');
@@ -54,13 +45,14 @@ function showKeyInfo(e) {
     showKeyInfoRepeats++;
   } else {
     showKeyInfoRepeats = 0
+    showKeyInfoHistory = null
   }
   showKeyInfoHistory = keys
   clearTimeout(showKeyInfoTimeout)
   const nfo = $('#key-press-info')
   let prefix = ''
   if (showKeyInfoRepeats > 0) {
-    prefix = showKeyInfoRepeats + ' x '
+    prefix = (showKeyInfoRepeats + 1) + ' x '
   }
   nfo.stop(true).text(prefix + keys).fadeIn(0)
   showKeyInfoTimeout = setTimeout(function () {
@@ -121,6 +113,21 @@ class Home extends Component {
   location(areaIndex) {
     return this.state.areas[areaIndex].locations[this.state.areas[areaIndex].activeIndex]
   }
+
+  changeDirectory(e) {
+    let el = document.activeElement
+    const p = path.basename(e.target.href)
+    e.preventDefault && e.preventDefault();
+    return false
+  }
+
+  toggleSelection(e) {
+    let el = document.activeElement
+    const p = path.basename(e.target.href)
+    e.preventDefault && e.preventDefault();
+    return false
+  }
+
   componentDidMount() {
     const self = this;
 
@@ -138,9 +145,22 @@ class Home extends Component {
       self.focusNextElement();
       return false;
     });
+
     Mousetrap.bind('up', (e) => {
       showKeyInfo(e)
       self.focusPreviousElement();
+      return false;
+    });
+
+    Mousetrap.bind('space', (e) => {
+      showKeyInfo(e)
+      self.toggleSelection(e);
+      return false;
+    });
+
+    Mousetrap.bind('enter', (e) => {
+      showKeyInfo(e)
+      self.changeDirectory(e);
       return false;
     });
 
@@ -323,7 +343,7 @@ class Home extends Component {
       const dir = area.contents.directories[d];
       const className = 'folder-icon';
       files.push(
-        <a key={areaIndex + dir.name} className={'filesystem-item folder'} href="#">
+        <a onClick={this.toggleSelection.bind(this)} onDoubleClick={this.changeDirectory.bind(this)} key={areaIndex + '_' + dir.name} className={'filesystem-item folder'} href={dir.fullpath}>
           <span className={className} /> <span className={'filesystem-item-name'}>{dir.name}</span>
         </a>
       );
@@ -338,16 +358,16 @@ class Home extends Component {
         colorClassName = '';
       }
       files.push(
-        <a key={areaIndex + file.name} className={`filesystem-item ${colorClassName}`} href="#">
-          <div className="row">
+        <a key={areaIndex + file.name} className={`filesystem-item ${colorClassName}`} target="_blank" href={file.fullpath}>
+          <div className="row no-gutter">
             <div className="col-xs-7">
-              <span className={className} /> <span className={'filesystem-item-name'}>{file.name}</span>
+              <span className={className + 'filesystem-item-name'}> {file.name}</span>
             </div>
             <div className="col-xs-2 text-right">
-              <span className={'filesystem-item-name'}>{bytes(file.size, { unitSeparator: ' ' })}</span>
+              <span className={'filesystem-item-size'}>{bytes(file.size, { unitSeparator: ' ' })}</span>
             </div>
             <div className="col-xs-3">
-              <span className={'filesystem-item-name'}>{formatDate(file.mtime)}</span>
+              <span className={'filesystem-item-date'}>{formatDate(file.mtime)}</span>
             </div>
           </div>
         </a>
@@ -363,43 +383,43 @@ class Home extends Component {
 
       <div className="container-fluid">
 
-        <div className="row">
+        <div className="row no-gutter">
           <div className="col-sm-6">
             {this.renderTabs(0, this.state.areas[0])}
-            <div className="location">{this.location(0)}</div>
+            <div className="location-bar">{this.location(0)}</div>
             <div className="file-system-view">
               {this.renderArea(0, this.state.areas[0])}
             </div>
           </div>
           <div className="col-sm-6">
             {this.renderTabs(1, this.state.areas[1])}
-            <div className="location">{this.location(1)}</div>
+            <div className="location-bar">{this.location(1)}</div>
             <div className="file-system-view">
               {this.renderArea(1, this.state.areas[1])}
             </div>
           </div>
         </div>
-        <div className="row vbottom">
+        <div className="row no-gutter vbottom">
           <div className="col-sm-6 ">
-            Bottom DIV
+            <div className="footer-bar">footer</div>
           </div>
           <div className="col-sm-6 ">
-            Bottom DIV
+            <div className="footer-bar">footer</div>
           </div>
         </div>
-        <div className="row">
+        <div className="row no-gutter">
           <div className="col-sm-12 vbottom terminal-container-header">
             <a href="#" onClick={this.toggleTerminal.bind(this)}>Shell</a>
           </div>
         </div>
-        <div className="row vbottom terminal-container">
+        <div className="row no-gutter vbottom terminal-container">
           <div className="col-sm-12 vbottom">
             <div id="terminal" />
             <input type="text" id="terminal-input" />
           </div>
         </div>
         <div id="key-press-info" className="center">
-          <h1>afasf</h1>
+
         </div>
       </div>
 
