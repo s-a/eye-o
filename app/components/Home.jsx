@@ -4,6 +4,7 @@ import Mousetrap from 'mousetrap'
 import Terminal from 'xterm'
 import icons from 'file-icons-js'
 import $ from 'jquery'
+import { debug } from 'util';
 
 const path = require('path')
 const bytes = require('bytes')
@@ -140,21 +141,21 @@ class Home extends Component {
     })
 
     Mousetrap.bind('enter', (e) => {
-      showKeyInfo(e)
+      showKeyInfo(e, 'Enter current selected folder.')
       self.changeDirectory.bind(self)(e)
       return false
     })
 
-    Mousetrap.bind('tab', (e) => {
-      showKeyInfo(e)
-      self.changeActiveArea.bind(self)(e)
+    Mousetrap.bind(['tab', 'shift+tab'], (e) => {
+      showKeyInfo(e, 'Toggle active filesystem view area.')
+      self.toggleActiveArea.bind(self)(e)
       return false
-    })
+    }, 'keydown')
 
     Mousetrap.bind('backspace', (e) => {
-      showKeyInfo(e)
-      let areaIndex = self.state.activeAreaIndex
-      let locationIndex = self.state.areas[areaIndex].activeLocationIndex
+      showKeyInfo(e, 'Go to parent folder.')
+      const areaIndex = self.state.activeAreaIndex
+      const locationIndex = self.state.areas[areaIndex].activeLocationIndex
       let p = self.state.areas[areaIndex].locations[locationIndex]
       p = path.join(p, '..')
       self.setPath.bind(self)(areaIndex, p)
@@ -261,14 +262,17 @@ class Home extends Component {
     return false
   }
 
-  changeActiveArea(e) {
-    let idx = this.state.activeAreaIndex
+  toggleActiveArea(e) {
+    const idx = parseInt(this.state.activeAreaIndex.toString() || '1', 10)
     const newIdx = (idx === 0 ? 1 : 0)
     this.setState({
       activeAreaIndex: newIdx
     })
+    if (document.activeElement) {
+      document.activeElement.blur()
+    }
     this.focusNextElement(e)
-    e.preventDefault && e.preventDefault()
+    e.preventDefault()
     return false
   }
 
@@ -303,12 +307,15 @@ class Home extends Component {
   focusNextElement() {
     // add all elements we want to include in our selection
     const x = $(document.activeElement)
-    if (!x.hasClass('filesystem-item')) {
-      $(`.area-${this.state.activeAreaIndex}:first`).find('.filesystem-item:first').focus()
+    if (!x || !x.hasClass('filesystem-item')) {
+      const selector = `.area-${(this.state.activeAreaIndex)}:first`
+
+      $(selector).find('.filesystem-item:first').focus()
     } else {
+      console.log('go')
       x.next().focus()
-      this.setState({ activeAreaIndex: $(document.activeElement).data('area-index') })
     }
+    this.setState({ activeAreaIndex: $(document.activeElement).data('area-index') })
   }
 
   focusPreviousElement(current) {
