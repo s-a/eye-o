@@ -78,32 +78,26 @@ const fitHeight = function fitHeight(el) {
 class Home extends Component {
 
   state = {
+    activeAreaIndex: 0,
     areas: [
       {
         locations: ['c:/git', 'c:/git/eye-o'],
-        activeIndex: 1,
+        activeLocationIndex: 1,
         contents: {
           directories: [
-            'a',
-
           ],
           files: [
-            'b',
-
           ]
         }
       },
       {
         locations: ['c:/windows', 'c:/windows/de-DE', 'c:/windows', 'c:/windows'],
-        activeIndex: 2,
+        activeLocationIndex: 1,
         contents: {
           directories: [
-            'a',
 
           ],
           files: [
-            'b',
-
           ]
         }
       }
@@ -111,21 +105,31 @@ class Home extends Component {
   }
 
   location(areaIndex) {
-    return this.state.areas[areaIndex].locations[this.state.areas[areaIndex].activeIndex]
+    return this.state.areas[areaIndex].locations[this.state.areas[areaIndex].activeLocationIndex]
+  }
+
+
+  setPath(areaIndex, path) {
+    let state = this.state
+    state.areas[areaIndex].locations[this.state.areas[areaIndex].activeLocationIndex] = path
+    this.setState(state)
+    this.changeActiveTabIndex(areaIndex, this.state.areas[areaIndex], this.state.areas[areaIndex].activeLocationIndex)
+    return false
   }
 
   changeDirectory(e) {
     let el = document.activeElement
-    const p = path.basename(e.target.href)
+    const p = path.resolve(e.target.href.replace(/file:\/\/\//, '')).replace(/\\/g, '/')
+    var areaIndex = $(el).data('area-index')
+    this.setPath(areaIndex, p)
+    this.focusNextElement()
     e.preventDefault && e.preventDefault();
     return false
   }
 
-  toggleSelection(e) {
-    let el = document.activeElement
-    const p = path.basename(e.target.href)
+  ignoreClick(e) {
     e.preventDefault && e.preventDefault();
-    return false
+    return true
   }
 
   componentDidMount() {
@@ -154,13 +158,13 @@ class Home extends Component {
 
     Mousetrap.bind('space', (e) => {
       showKeyInfo(e)
-      self.toggleSelection(e);
+      self.toggleSelection.bind(self)(e);
       return false;
     });
 
     Mousetrap.bind('enter', (e) => {
       showKeyInfo(e)
-      self.changeDirectory(e);
+      self.changeDirectory.bind(self)(e);
       return false;
     });
 
@@ -262,29 +266,40 @@ class Home extends Component {
     }
   }
 
-  focusNextElement(current) {
+  focusNextElement() {
     // add all elements we want to include in our selection
     const x = $(document.activeElement);
-    x.next().focus();
+    if (!x.hasClass('filesystem-item')) {
+      $('.area-' + this.state.activeAreaIndex + ':first').find('.filesystem-item:first').focus()
+    } else {
+      x.next().focus();
+      this.setState({ activeAreaIndex: $(document.activeElement).data('area-index') })
+    }
   }
 
   focusPreviousElement(current) {
     // add all elements we want to include in our selection
     const x = $(document.activeElement);
-    x.prev().focus();
+    if (!x.hasClass('filesystem-item')) {
+      $('.area-' + this.state.activeAreaIndex + ':first').find('.filesystem-item:last').focus()
+    } else {
+      x.prev().focus();
+      this.setState({ activeAreaIndex: $(document.activeElement).data('area-index') })
+    }
   }
 
-  changeActiveTabIndex(areaIndex, area, newActiveIndex) {
+  changeActiveTabIndex(areaIndex, area, newActiveLocationIndex) {
     const newState = this.state;
-    newState.areas[areaIndex].activeIndex = newActiveIndex;
+    newState.activeAreaIndex = areaIndex;
+    newState.areas[areaIndex].activeLocationIndex = newActiveLocationIndex;
     newState.areas[areaIndex].contents.directories = [];
     this.setState(newState);
-    const dir = `${newState.areas[areaIndex].locations[newActiveIndex]}`;
+    const dir = `${newState.areas[areaIndex].locations[newActiveLocationIndex]}`;
 
     const fs = require('fs');
     const getDirs = function (rootDir, cb) {
       fs.readdir(rootDir, (err, files) => {
-        const dirs = ['..'];
+        const dirs = [];
         const filenames = [];
         for (let index = 0; index < files.length; ++index) {
           const file = files[index];
@@ -324,7 +339,7 @@ class Home extends Component {
       const location = area.locations[index].split('/').pop();
       tabs.push(
         <li key={index} className="tab" >
-          <span onClick={() => this.changeActiveTabIndex(areaIndex, area, index)} className={index === area.activeIndex ? 'tab-active' : null} >
+          <span onClick={() => this.changeActiveTabIndex(areaIndex, area, index)} className={index === area.activeLocationIndex ? 'tab-active' : null} >
             {location}/
           </span>
         </li>
@@ -343,7 +358,7 @@ class Home extends Component {
       const dir = area.contents.directories[d];
       const className = 'folder-icon';
       files.push(
-        <a onClick={this.toggleSelection.bind(this)} onDoubleClick={this.changeDirectory.bind(this)} key={areaIndex + '_' + dir.name} className={'filesystem-item folder'} href={dir.fullpath}>
+        <a data-area-index={areaIndex} onClick={this.ignoreClick.bind(this)} onDoubleClick={this.changeDirectory.bind(this)} key={areaIndex + '_' + dir.name} className={'filesystem-item folder'} href={dir.fullpath}>
           <span className={className} /> <span className={'filesystem-item-name'}>{dir.name}</span>
         </a>
       );
@@ -374,7 +389,7 @@ class Home extends Component {
       );
     }
 
-    const result = <ul className="area">{files}</ul>;
+    const result = <ul className={"area area-" + areaIndex}>{files}</ul>;
     return result;
   }
 
