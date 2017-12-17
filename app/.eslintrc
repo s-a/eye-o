@@ -17,6 +17,15 @@
     "flowtype/union-intersection-spacing": [2, "always"],
     "flowtype/use-flow-type": 2,
     "flowtype/valid-syntax": 2,
-    "flowtype-errors/show-errors": 2
+    "flowtype-errors/show-errors": 2,
+    "no-plusplus": [0, "never"],
+    "no-unused-vars": "warn",
+    "max-len": "warn",
+    "prefer-const": "warn",
+    "semi": ["error", "never"],
+    "jsx-a11y/href-no-hash": [0, "never"],
+    "no-param-reassign": "warn",
+    "no-shadow": "warn",
+    "class-methods-use-this": "warn",
   }
 }

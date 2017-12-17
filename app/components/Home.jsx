@@ -1,48 +1,48 @@
-// @flow
-import React, { Component } from 'react';
+import React, { Component } from 'react'  // eslint-disable-line import/extensions
 // import { Link } from 'react-router-dom';
-import Mousetrap from 'mousetrap';
-import Terminal from 'xterm';
-import icons from 'file-icons-js';
-import $ from 'jquery';
-const path = require('path')
-var bytes = require('bytes');
-const pty = require('node-pty');
-var event2string = require('key-event-to-string')()
+import Mousetrap from 'mousetrap'
+import Terminal from 'xterm'
+import icons from 'file-icons-js'
+import $ from 'jquery'
 
-const xterm = new Terminal();
+const path = require('path')
+const bytes = require('bytes')
+const pty = require('node-pty')
+const event2string = require('key-event-to-string')()
+const fs = require('fs')
+
+const xterm = new Terminal()
 // Notice it's called statically on the type, not an object
-Terminal.loadAddon('fit');
+Terminal.loadAddon('fit')
 
 
 function formatDate(date) {
-  return (date || '').toLocaleString().replace(/,/g, ' ');
+  return (date || '').toLocaleString().replace(/,/g, ' ')
 }
 
 function capitalizeFirstLetter(string) {
-  return string.charAt(0).toUpperCase() + string.slice(1);
+  return string.charAt(0).toUpperCase() + string.slice(1)
 }
 
 let showKeyInfoTimeout
 let showKeyInfoRepeats = 0
 let showKeyInfoHistory
 function showKeyInfo(e, description) {
-  var keys
+  let keys
   if (typeof e === 'string') {
-    keys = e.split(' ');
+    keys = e.split(' ')
     for (let i = 0; i < keys.length; i++) {
-      const key = keys[i];
+      const key = keys[i]
       if (key.length > 1) {
         keys[i] = capitalizeFirstLetter(key)
       }
     }
     keys = keys.join(' ')
-
   } else {
     keys = event2string(e)
   }
   if (showKeyInfoHistory === keys) {
-    showKeyInfoRepeats++;
+    showKeyInfoRepeats++
   } else {
     showKeyInfoRepeats = 0
     showKeyInfoHistory = null
@@ -54,28 +54,28 @@ function showKeyInfo(e, description) {
   const nfo2 = $('#key-press-info-description')
   let prefix = ''
   if (showKeyInfoRepeats > 0) {
-    prefix = (showKeyInfoRepeats + 1) + ' x '
+    prefix = `${showKeyInfoRepeats + 1} x `
   }
   nfo.stop(true).fadeIn(0)
   nfo1.text(prefix + keys)
   nfo2.text(description || '')
-  showKeyInfoTimeout = setTimeout(function () {
+  showKeyInfoTimeout = setTimeout(() => {
     nfo.fadeOut(1000)
   }, 1400)
 }
 
 
 const fitHeight = function fitHeight(el) {
-  let total = $('.terminal-container-header').outerHeight() + 50;
+  let total = $('.terminal-container-header').outerHeight() + 50
   if ($('.terminal-container:visible').length !== 0) {
-    total += $('.terminal-container:visible').outerHeight() + 80;
+    total += $('.terminal-container:visible').outerHeight() + 80
   }
 
   $(el).parent().children().not(el)
     .each(function () {
-      total += $(this).outerHeight();
-    });
-  let newHeight = $(window).height() - total;
+      total += $(this).outerHeight()
+    })
+  const newHeight = $(window).height() - total
   $(el).height(newHeight)
 }
 
@@ -108,117 +108,89 @@ class Home extends Component {
     ]
   }
 
-  location(areaIndex) {
-    return this.state.areas[areaIndex].locations[this.state.areas[areaIndex].activeLocationIndex]
-  }
-
-
-  setPath(areaIndex, path) {
-    let state = this.state
-    state.areas[areaIndex].locations[this.state.areas[areaIndex].activeLocationIndex] = path
-    this.setState(state)
-    this.changeActiveTabIndex(areaIndex, this.state.areas[areaIndex], this.state.areas[areaIndex].activeLocationIndex)
-    return false
-  }
-
-  changeDirectory(e) {
-    let el = document.activeElement
-    const p = path.resolve(e.target.href.replace(/file:\/\/\//, '')).replace(/\\/g, '/')
-    var areaIndex = $(el).data('area-index')
-    this.setPath(areaIndex, p)
-    this.focusNextElement()
-    e.preventDefault && e.preventDefault();
-    return false
-  }
-
-  ignoreClick(e) {
-    e.preventDefault && e.preventDefault();
-    return true
-  }
 
   componentDidMount() {
-    const self = this;
+    const self = this
 
-    Mousetrap.bind('shift+s n up', function (e) {
+    Mousetrap.bind('shift+s n up', (e) => {
       showKeyInfo('shift+s n up', 'Sort files ascending')
-      return false;
-    });
-    Mousetrap.bind('shift+s n down', function (e) {
+      return false
+    })
+    Mousetrap.bind('shift+s n down', (e) => {
       showKeyInfo('shift+s n down', 'Sort files descending')
-      return false;
-    });
+      return false
+    })
 
     Mousetrap.bind('down', (e) => {
       showKeyInfo(e)
-      self.focusNextElement();
-      return false;
-    });
+      self.focusNextElement()
+      return false
+    })
 
     Mousetrap.bind('up', (e) => {
       showKeyInfo(e)
-      self.focusPreviousElement();
-      return false;
-    });
+      self.focusPreviousElement()
+      return false
+    })
 
     Mousetrap.bind('space', (e) => {
       showKeyInfo(e)
-      self.toggleSelection.bind(self)(e);
-      return false;
-    });
+      self.toggleSelection.bind(self)(e)
+      return false
+    })
 
     Mousetrap.bind('enter', (e) => {
       showKeyInfo(e)
-      self.changeDirectory.bind(self)(e);
-      return false;
-    });
+      self.changeDirectory.bind(self)(e)
+      return false
+    })
 
     Mousetrap.bind('backspace', (e) => {
       showKeyInfo(e)
-      var areaIndex = self.state.activeAreaIndex
-      var locationIndex = self.state.areas[areaIndex].activeLocationIndex
-      var p = self.state.areas[areaIndex].locations[locationIndex]
+      let areaIndex = self.state.activeAreaIndex
+      let locationIndex = self.state.areas[areaIndex].activeLocationIndex
+      let p = self.state.areas[areaIndex].locations[locationIndex]
       p = path.join(p, '..')
-      self.setPath.bind(self)(areaIndex, p);
-      return false;
-    });
+      self.setPath.bind(self)(areaIndex, p)
+      return false
+    })
 
-    Mousetrap.bind(['command+s', 'ctrl+s'], function (e) {
+    Mousetrap.bind(['command+s', 'ctrl+s'], (e) => {
       showKeyInfo(e)
       self.showTerminal(true)
-      return false;
-    });
+      return false
+    })
 
-    this.changeActiveTabIndex(0, this.state.areas[0], 1);
-    this.changeActiveTabIndex(1, this.state.areas[1], 0);
+    this.changeActiveTabIndex(0, this.state.areas[0], 1)
+    this.changeActiveTabIndex(1, this.state.areas[1], 0)
 
     $(window).resize(() => { // On resize
-      $('.file-system-view').each(function () {
+      $('.file-system-view').each(function eachFileSystemView() {
         fitHeight(this)
       })
-    });
+    })
 
 
-    const terminalContainer = document.getElementById('terminal');
-    const terminalInput = document.getElementById('terminal-input');
+    const terminalContainer = document.getElementById('terminal')
+    const terminalInput = document.getElementById('terminal-input')
 
     $(terminalInput).keydown((e) => {
       if (e.keyCode === 13) {
         showKeyInfo(e)
-        const txt = terminalInput.value;
-        term.write(`${txt}\r\n`);
-        terminalInput.value = '';
+        const txt = terminalInput.value
+        term.write(`${txt}\r\n`)
+        terminalInput.value = ''
       }
       if (e.keyCode === 27) {
         showKeyInfo(e)
         self.showTerminal(false)
-
       }
-    });
+    })
     $(terminalInput).blur((e) => {
       self.showTerminal(false)
-    });
+    })
 
-    xterm.open(terminalContainer);
+    xterm.open(terminalContainer)
 
 
     const term = pty.spawn(process.platform === 'win32' ? 'cmd.exe' : 'bash', [], {
@@ -227,39 +199,69 @@ class Home extends Component {
       rows: 80,
       cwd: process.env.PWD,
       env: process.env
-    });
+    })
     term.on('data', (data) => {
-      console.log(data);
-      xterm.write(data);
-    });
+      console.log(data)
+      xterm.write(data)
+    })
 
     term.on('key', (key, ev) => {
-      const printable = (!ev.altKey && !ev.altGraphKey && !ev.ctrlKey && !ev.metaKey);
+      const printable = (!ev.altKey && !ev.altGraphKey && !ev.ctrlKey && !ev.metaKey)
 
       if (ev.keyCode === 13) {
-        term.prompt();
+        term.prompt()
       } else if (ev.keyCode === 8) {
         // Do not delete the prompt
         if (term.x > 2) {
-          term.write('\b \b');
+          term.write('\b \b')
         }
       } else if (printable) {
-        term.write(key);
+        term.write(key)
       }
-    });
+    })
 
-    term.write('cd c:\\temp\r\n');
+    term.write('cd c:\\temp\r\n')
 
-    setTimeout(function () {
+    setTimeout(() => {
       $('.file-system-view').each(function () {
         fitHeight(this)
       })
     }, 100)
+  }
 
+
+  location(areaIndex) {
+    return this.state.areas[areaIndex].locations[this.state.areas[areaIndex].activeLocationIndex]
+  }
+
+
+  setPath(areaIndex, path) {
+    const state = this.state
+    state.areas[areaIndex].locations[this.state.areas[areaIndex].activeLocationIndex] = path
+    this.setState(state)
+    this.changeActiveTabIndex(areaIndex, this.state.areas[areaIndex], this.state.areas[areaIndex].activeLocationIndex)
+    return false
+  }
+
+  changeDirectory(e) {
+    const el = document.activeElement
+    const p = path.resolve(e.target.href.replace(/file:\/\/\//, '')).replace(/\\/g, '/')
+    if ($(el).hasClass('folder')) {
+      const areaIndex = $(el).data('area-index')
+      this.setPath(areaIndex, p)
+      this.focusNextElement()
+    }
+    e.preventDefault && e.preventDefault()
+    return false
+  }
+
+  ignoreClick(e) {
+    e.preventDefault && e.preventDefault()
+    return true
   }
 
   toggleTerminal() {
-    this.showTerminal(!$('.terminal-container').is(":visible"))
+    this.showTerminal(!$('.terminal-container').is(':visible'))
   }
 
   showTerminal(show) {
@@ -267,130 +269,129 @@ class Home extends Component {
     const done = function () {
       $('.file-system-view').each(function () {
         fitHeight(this)
-        if (c.is(":visible")) {
+        if (c.is(':visible')) {
           $('#terminal-input').focus()
           xterm.fit()
         }
       })
     }
+
     if (show) {
-      c.fadeIn(0, done);
+      c.fadeIn(0, done)
     } else {
-      c.fadeOut(0, done);
+      c.fadeOut(0, done)
     }
   }
 
   focusNextElement() {
     // add all elements we want to include in our selection
-    const x = $(document.activeElement);
+    const x = $(document.activeElement)
     if (!x.hasClass('filesystem-item')) {
-      $('.area-' + this.state.activeAreaIndex + ':first').find('.filesystem-item:first').focus()
+      $(`.area-${this.state.activeAreaIndex}:first`).find('.filesystem-item:first').focus()
     } else {
-      x.next().focus();
+      x.next().focus()
       this.setState({ activeAreaIndex: $(document.activeElement).data('area-index') })
     }
   }
 
   focusPreviousElement(current) {
     // add all elements we want to include in our selection
-    const x = $(document.activeElement);
+    const x = $(document.activeElement)
     if (!x.hasClass('filesystem-item')) {
-      $('.area-' + this.state.activeAreaIndex + ':first').find('.filesystem-item:last').focus()
+      $(`.area-${this.state.activeAreaIndex}:first`).find('.filesystem-item:last').focus()
     } else {
-      x.prev().focus();
+      x.prev().focus()
       this.setState({ activeAreaIndex: $(document.activeElement).data('area-index') })
     }
   }
 
   changeActiveTabIndex(areaIndex, area, newActiveLocationIndex) {
-    const newState = this.state;
-    newState.activeAreaIndex = areaIndex;
-    newState.areas[areaIndex].activeLocationIndex = newActiveLocationIndex;
-    newState.areas[areaIndex].contents.directories = [];
-    this.setState(newState);
-    const dir = `${newState.areas[areaIndex].locations[newActiveLocationIndex]}`;
+    const newState = this.state
+    newState.activeAreaIndex = areaIndex
+    newState.areas[areaIndex].activeLocationIndex = newActiveLocationIndex
+    newState.areas[areaIndex].contents.directories = []
+    this.setState(newState)
+    const dir = `${newState.areas[areaIndex].locations[newActiveLocationIndex]}`
 
-    const fs = require('fs');
     const getDirs = function (rootDir, cb) {
       fs.readdir(rootDir, (err, files) => {
-        const dirs = [];
-        const filenames = [];
+        const dirs = []
+        const filenames = []
         for (let index = 0; index < files.length; ++index) {
-          const file = files[index];
+          const file = files[index]
           if (file[0] !== '.') {
-            const filePath = `${rootDir}/${file}`;
+            const filePath = `${rootDir}/${file}`
             fs.stat(filePath, function (err, stat) {
               if (err) {
-                console.warn(`error getting stats of ${file}`);
+                console.warn(`error getting stats of ${file}`)
               } else {
-
                 stat.name = this.file
                 stat.fullpath = filePath
                 if (stat.isDirectory()) {
-                  dirs.push(stat);
+                  dirs.push(stat)
                 } else {
-                  filenames.push(stat);
+                  filenames.push(stat)
                 }
                 if (files.length === (this.index + 1)) {
-                  return cb({ directories: dirs, files: filenames });
+                  return cb({ directories: dirs, files: filenames })
                 }
               }
-            }.bind({ index, file }));
+            }.bind({ index, file }))
           }
         }
-      });
-    };
+      })
+    }
 
     getDirs(dir, (contents) => {
-      newState.areas[areaIndex].contents = contents;
-      this.setState(newState);
-    });
+      newState.areas[areaIndex].contents = contents
+      this.setState(newState)
+    })
   }
 
   renderTabs(areaIndex, area) {
-    const tabs = [];
+    const tabs = []
     for (let index = 0; index < area.locations.length; index++) {
-      const location = area.locations[index].split('/').pop();
+      const location = area.locations[index].split('/').pop()
       tabs.push(
         <li key={index} className="tab" >
           <span onClick={() => this.changeActiveTabIndex(areaIndex, area, index)} className={index === area.activeLocationIndex ? 'tab-active' : null} >
             {location}/
           </span>
         </li>
-      );
+      )
     }
     return (
       <ul className="tabs">{tabs}</ul>
-    );
+    )
   }
 
   renderArea(areaIndex, area) {
-    const files = [];
-    const filename = 'README.md';
+    const files = []
+    const filename = 'README.md'
 
     for (let d = 0; d < area.contents.directories.length; d++) {
-      const dir = area.contents.directories[d];
-      const className = 'folder-icon';
+      const dir = area.contents.directories[d]
+      const className = 'folder-icon'
       files.push(
-        <a data-area-index={areaIndex} onClick={this.ignoreClick.bind(this)} onDoubleClick={this.changeDirectory.bind(this)} key={areaIndex + '_' + dir.name} className={'filesystem-item folder'} href={dir.fullpath}>
+        <a data-area-index={areaIndex} onClick={this.ignoreClick.bind(this)} onDoubleClick={this.changeDirectory.bind(this)} key={`${areaIndex}_${dir.name}`} className={'filesystem-item folder'} href={dir.fullpath}>
           <span className={className} /> <span className={'filesystem-item-name'}>{dir.name}</span>
         </a>
-      );
+      )
     }
     for (let f = 0; f < area.contents.files.length; f++) {
-      const file = area.contents.files[f];
-      const className = icons.getClassWithColor(file.name);
-      let colorClassName = (className || '').split(' ');
+      const file = area.contents.files[f]
+      const className = icons.getClassWithColor(file.name)
+      let colorClassName = (className || '').split(' ')
       if (colorClassName.length === 2) {
-        colorClassName = colorClassName.pop();
+        colorClassName = colorClassName.pop()
       } else {
-        colorClassName = '';
+        colorClassName = ''
       }
       files.push(
         <a data-area-index={areaIndex} onClick={this.ignoreClick.bind(this)} key={areaIndex + file.name} className={`filesystem-item ${colorClassName}`} target="_blank" href={file.fullpath}>
           <div className="row no-gutter">
             <div className="col-xs-7">
-              <span className={className + 'filesystem-item-name'}> {file.name}</span>
+              <span className={`${className}filesystem-item-name`}> {file.name}</span>
             </div>
             <div className="col-xs-2 text-right">
               <span className={'filesystem-item-size'}>{bytes(file.size, { unitSeparator: ' ' })}</span>
@@ -400,11 +401,12 @@ class Home extends Component {
             </div>
           </div>
         </a>
-      );
+      )
     }
 
-    const result = <ul className={"area area-" + areaIndex}>{files}</ul>;
-    return result;
+    const cn = `area area-${areaIndex}`
+    const result = <ul className={cn}>{files}</ul>
+    return result
   }
 
   render() {
@@ -448,13 +450,13 @@ class Home extends Component {
           </div>
         </div>
         <div id="key-press-info" className="center">
-          <div id="key-press-info-short-cut"></div>
-          <div id="key-press-info-description"></div>
+          <div id="key-press-info-short-cut" />
+          <div id="key-press-info-description" />
         </div>
       </div>
 
-    );
+    )
   }
 }
 
-export default Home;
+export default Home
