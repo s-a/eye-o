@@ -145,6 +145,12 @@ class Home extends Component {
       return false
     })
 
+    Mousetrap.bind('tab', (e) => {
+      showKeyInfo(e)
+      self.changeActiveArea.bind(self)(e)
+      return false
+    })
+
     Mousetrap.bind('backspace', (e) => {
       showKeyInfo(e)
       let areaIndex = self.state.activeAreaIndex
@@ -251,6 +257,17 @@ class Home extends Component {
       this.setPath(areaIndex, p)
       this.focusNextElement()
     }
+    e.preventDefault && e.preventDefault()
+    return false
+  }
+
+  changeActiveArea(e) {
+    let idx = this.state.activeAreaIndex
+    const newIdx = (idx === 0 ? 1 : 0)
+    this.setState({
+      activeAreaIndex: newIdx
+    })
+    this.focusNextElement(e)
     e.preventDefault && e.preventDefault()
     return false
   }
@@ -371,27 +388,35 @@ class Home extends Component {
 
     for (let d = 0; d < area.contents.directories.length; d++) {
       const dir = area.contents.directories[d]
-      const className = 'folder-icon'
+      const icon = <i className="fa fa-folder" aria-hidden="true"></i>
       files.push(
         <a data-area-index={areaIndex} onClick={this.ignoreClick.bind(this)} onDoubleClick={this.changeDirectory.bind(this)} key={`${areaIndex}_${dir.name}`} className={'filesystem-item folder'} href={dir.fullpath}>
-          <span className={className} /> <span className={'filesystem-item-name'}>{dir.name}</span>
+          {icon} <span className={'filesystem-item-name'}>{dir.name}</span>
         </a>
       )
     }
     for (let f = 0; f < area.contents.files.length; f++) {
       const file = area.contents.files[f]
-      const className = icons.getClassWithColor(file.name)
-      let colorClassName = (className || '').split(' ')
-      if (colorClassName.length === 2) {
-        colorClassName = colorClassName.pop()
+      const icn = (icons.getClassWithColor(file.name) || '')
+
+      const iconClassName = icn.split(' ')[0]
+      let iconClassColorName = icn.split(' ')[1]
+      if (!iconClassColorName) {
+        iconClassColorName = 'dark-cyan'
+      }
+      let icon = ''
+
+      if (iconClassName) {
+        icon = <span className={'file-type-icon ' + iconClassName} aria-hidden="true" />
       } else {
-        colorClassName = ''
+
+        icon = <i className={"file-type-icon fa fa-file"} aria-hidden="true" />
       }
       files.push(
-        <a data-area-index={areaIndex} onClick={this.ignoreClick.bind(this)} key={areaIndex + file.name} className={`filesystem-item ${colorClassName}`} target="_blank" href={file.fullpath}>
+        <a data-area-index={areaIndex} onClick={this.ignoreClick.bind(this)} key={areaIndex + file.name} className={`filesystem-item ` + iconClassColorName} target="_blank" href={file.fullpath}>
           <div className="row no-gutter">
             <div className="col-xs-7">
-              <span className={`${className}filesystem-item-name`}> {file.name}</span>
+              {icon} <span className={`filesystem-item-name `}> {file.name}</span>
             </div>
             <div className="col-xs-2 text-right">
               <span className={'filesystem-item-size'}>{bytes(file.size, { unitSeparator: ' ' })}</span>
@@ -440,7 +465,7 @@ class Home extends Component {
         </div>
         <div className="row no-gutter">
           <div className="col-sm-12 vbottom terminal-container-header">
-            <a href="#" onClick={this.toggleTerminal.bind(this)}>Shell</a>
+            <i onClick={this.toggleTerminal.bind(this)} className="fa fa-terminal" aria-hidden="true" />
           </div>
         </div>
         <div className="row no-gutter vbottom terminal-container">
