@@ -135,7 +135,7 @@ a {
 
 #key-press-info {
   display: none;
-  background: rgba(0, 0, 0, 0.95);
+  background: rgba(0, 0, 0, 0.75);
   color: #fff;
   position: absolute;
   top: 44px;
@@ -143,9 +143,14 @@ a {
   right: 0;
   margin-left: auto;
   margin-right: auto;
-  width: 300px;
+  width: 400px;
   font-size: 44px;
   text-align: center;
   border-radius: 5px;
   /* Need a specific value to work */
+}
+
+#key-press-info-description {
+  font-style: italic;
+  font-size: 22px;
 }

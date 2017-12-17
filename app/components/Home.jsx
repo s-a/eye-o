@@ -26,7 +26,7 @@ function capitalizeFirstLetter(string) {
 let showKeyInfoTimeout
 let showKeyInfoRepeats = 0
 let showKeyInfoHistory
-function showKeyInfo(e) {
+function showKeyInfo(e, description) {
   var keys
   if (typeof e === 'string') {
     keys = e.split(' ');
@@ -50,11 +50,15 @@ function showKeyInfo(e) {
   showKeyInfoHistory = keys
   clearTimeout(showKeyInfoTimeout)
   const nfo = $('#key-press-info')
+  const nfo1 = $('#key-press-info-short-cut')
+  const nfo2 = $('#key-press-info-description')
   let prefix = ''
   if (showKeyInfoRepeats > 0) {
     prefix = (showKeyInfoRepeats + 1) + ' x '
   }
-  nfo.stop(true).text(prefix + keys).fadeIn(0)
+  nfo.stop(true).fadeIn(0)
+  nfo1.text(prefix + keys)
+  nfo2.text(description || '')
   showKeyInfoTimeout = setTimeout(function () {
     nfo.fadeOut(1000)
   }, 1400)
@@ -135,12 +139,12 @@ class Home extends Component {
   componentDidMount() {
     const self = this;
 
-    Mousetrap.bind('s f up', function (e) {
-      showKeyInfo('s f up')
+    Mousetrap.bind('shift+s n up', function (e) {
+      showKeyInfo('shift+s n up', 'Sort files ascending')
       return false;
     });
-    Mousetrap.bind('s f down', function (e) {
-      showKeyInfo('s f down')
+    Mousetrap.bind('shift+s n down', function (e) {
+      showKeyInfo('shift+s n down', 'Sort files descending')
       return false;
     });
 
@@ -165,6 +169,16 @@ class Home extends Component {
     Mousetrap.bind('enter', (e) => {
       showKeyInfo(e)
       self.changeDirectory.bind(self)(e);
+      return false;
+    });
+
+    Mousetrap.bind('backspace', (e) => {
+      showKeyInfo(e)
+      var areaIndex = self.state.activeAreaIndex
+      var locationIndex = self.state.areas[areaIndex].activeLocationIndex
+      var p = self.state.areas[areaIndex].locations[locationIndex]
+      p = path.join(p, '..')
+      self.setPath.bind(self)(areaIndex, p);
       return false;
     });
 
@@ -373,7 +387,7 @@ class Home extends Component {
         colorClassName = '';
       }
       files.push(
-        <a key={areaIndex + file.name} className={`filesystem-item ${colorClassName}`} target="_blank" href={file.fullpath}>
+        <a data-area-index={areaIndex} onClick={this.ignoreClick.bind(this)} key={areaIndex + file.name} className={`filesystem-item ${colorClassName}`} target="_blank" href={file.fullpath}>
           <div className="row no-gutter">
             <div className="col-xs-7">
               <span className={className + 'filesystem-item-name'}> {file.name}</span>
@@ -434,7 +448,8 @@ class Home extends Component {
           </div>
         </div>
         <div id="key-press-info" className="center">
-
+          <div id="key-press-info-short-cut"></div>
+          <div id="key-press-info-description"></div>
         </div>
       </div>
 
