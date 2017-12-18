@@ -4,13 +4,25 @@ import Mousetrap from 'mousetrap'
 import Terminal from 'xterm'
 import icons from 'file-icons-js'
 import $ from 'jquery'
-import { debug } from 'util';
+import { debug } from 'util'
 
 const path = require('path')
 const bytes = require('bytes')
 const pty = require('node-pty')
 const event2string = require('key-event-to-string')()
 const fs = require('fs')
+
+const sort = {
+  fs_asc(a, b) {
+    if (a < b) {
+      return -1
+    }
+    if (a > b) {
+      return 1
+    }
+    return 0
+  }
+}
 
 const xterm = new Terminal()
 // Notice it's called statically on the type, not an object
@@ -159,10 +171,12 @@ class Home extends Component {
       showKeyInfo(e, 'Go to parent folder.')
       const areaIndex = self.state.activeAreaIndex
       const locationIndex = self.state.areas[areaIndex].activeLocationIndex
-      let p = self.state.areas[areaIndex].locations[locationIndex]
-      const parentFolder = path.basename(p)
-      p = normalizePath(path.join(p, '..'))
-      self.setPath.bind(self)(areaIndex, p, parentFolder)
+      const originalPath = self.state.areas[areaIndex].locations[locationIndex]
+      const parentFolder = path.basename(originalPath)
+      const p = normalizePath(path.join(originalPath, '..'))
+      if (p !== originalPath) {
+        self.setPath.bind(self)(areaIndex, p, parentFolder)
+      }
       return false
     })
 
@@ -354,44 +368,44 @@ class Home extends Component {
     const dir = decodeURI(newState.areas[areaIndex].locations[newActiveLocationIndex])
 
     const getDirs = function (rootDir, cb) {
-      fs.readdir(rootDir, (err, files) => {
-        if (err) {
-          alert(err)
-          return
-        }
-        const dirs = []
-        const filenames = []
-        for (let index = 0; index < files.length; ++index) {
-          const file = files[index]
-          if (file[0] !== '.') {
-            const filePath = `${rootDir}/${file}`
-            fs.stat(filePath, function (err, stat) {
-              if (err) {
-                console.warn(`error getting stats of ${file}`)
-              } else {
-                stat.name = this.file
-                stat.fullpath = filePath
-                if (stat.isDirectory()) {
-                  dirs.push(stat)
-                } else {
-                  filenames.push(stat)
-                }
-                if (files.length === (this.index + 1)) {
-                  return cb({ directories: dirs, files: filenames, selectItem })
-                }
-              }
-            }.bind({ index, file }))
+      const files = fs.readdirSync(rootDir)
+      const dirs = []
+      const filenames = []
+      let idx = files.length - 1
+      files.forEach((file) => {
+        if (file !== '.') {
+          const filePath = `${rootDir}/${file}`
+
+          try {
+            var stats = fs.statSync(filePath)
+
+            stats.name = file
+            stats.fullpath = filePath
+            if (stats.isDirectory()) {
+              dirs.push(stats)
+            } else {
+              filenames.push(stats)
+            }
+          } catch (err) {
+            var e = {
+              name: file,
+              fullpath: filePath
+            }
+            filenames.push(e)
           }
+
+          dirs.sort(sort.fs_asc)
+          files.sort(sort.fs_asc)
+
         }
       })
+      return ({ directories: dirs, files: filenames, selectItem })
     }
+    const contents = getDirs(dir)
+    newState.areas[areaIndex].contents = contents
+    this.setState(newState)
+    this.focusElement(selectItem)
 
-    getDirs(dir, (contents) => {
-      contents.focusElement = selectItem
-      newState.areas[areaIndex].contents = contents
-      this.setState(newState)
-      this.focusElement(selectItem)
-    })
   }
 
   renderTabs(areaIndex, area) {
@@ -399,7 +413,7 @@ class Home extends Component {
     for (let index = 0; index < area.locations.length; index++) {
       const location = area.locations[index].split('/').pop()
       tabs.push(
-        <li key={index} className="tab" >
+        <li className="tab" >
           <span onClick={() => this.changeActiveTabIndex(areaIndex, area, index)} className={index === area.activeLocationIndex ? 'tab-active' : null} >
             {location}/
           </span>
@@ -413,13 +427,12 @@ class Home extends Component {
 
   renderArea(areaIndex, area) {
     const files = []
-    const filename = 'README.md'
 
     for (let d = 0; d < area.contents.directories.length; d++) {
       const dir = area.contents.directories[d]
-      const icon = <i className="fa fa-folder" aria-hidden="true"></i>
+      const icon = <i className="fa fa-folder" aria-hidden="true" />
       files.push(
-        <a data-area-index={areaIndex} onClick={this.ignoreClick.bind(this)} onDoubleClick={this.changeDirectory.bind(this)} key={`${areaIndex}_${dir.name}`} className={'filesystem-item folder'} href={dir.fullpath}>
+        <a data-area-index={areaIndex} onClick={this.ignoreClick.bind(this)} onDoubleClick={this.changeDirectory.bind(this)} className={'filesystem-item folder'} href={dir.fullpath}>
           {icon} <span className={'filesystem-item-name'}>{dir.name}</span>
         </a>
       )
@@ -436,16 +449,15 @@ class Home extends Component {
       let icon = ''
 
       if (iconClassName) {
-        icon = <span className={'file-type-icon ' + iconClassName} aria-hidden="true" />
+        icon = <span className={`file-type-icon ${iconClassName}`} aria-hidden="true" />
       } else {
-
-        icon = <i className={"file-type-icon fa fa-file"} aria-hidden="true" />
+        icon = <i className={'file-type-icon fa fa-file'} aria-hidden="true" />
       }
       files.push(
-        <a data-area-index={areaIndex} onClick={this.ignoreClick.bind(this)} key={areaIndex + file.name} className={`filesystem-item ` + iconClassColorName} target="_blank" href={file.fullpath}>
+        <a data-area-index={areaIndex} onClick={this.ignoreClick.bind(this)} className={'filesystem-item ' + iconClassColorName} target="_blank" href={file.fullpath}>
           <div className="row no-gutter">
             <div className="col-xs-7">
-              {icon} <span className={`filesystem-item-name `}> {file.name}</span>
+              {icon} <span className={'filesystem-item-name '}> {file.name}</span>
             </div>
             <div className="col-xs-2 text-right">
               <span className={'filesystem-item-size'}>{bytes(file.size, { unitSeparator: ' ' })}</span>
