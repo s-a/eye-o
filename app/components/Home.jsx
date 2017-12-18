@@ -160,8 +160,9 @@ class Home extends Component {
       const areaIndex = self.state.activeAreaIndex
       const locationIndex = self.state.areas[areaIndex].activeLocationIndex
       let p = self.state.areas[areaIndex].locations[locationIndex]
+      const parentFolder = path.basename(p)
       p = normalizePath(path.join(p, '..'))
-      self.setPath.bind(self)(areaIndex, p)
+      self.setPath.bind(self)(areaIndex, p, parentFolder)
       return false
     })
 
@@ -245,17 +246,17 @@ class Home extends Component {
   }
 
 
-  setPath(areaIndex, path) {
+  setPath(areaIndex, newPath, parentFolder) {
     const state = this.state
-    state.areas[areaIndex].locations[this.state.areas[areaIndex].activeLocationIndex] = path
+    state.areas[areaIndex].locations[this.state.areas[areaIndex].activeLocationIndex] = newPath
     this.setState(state)
-    this.changeActiveTabIndex(areaIndex, this.state.areas[areaIndex], this.state.areas[areaIndex].activeLocationIndex)
+    this.changeActiveTabIndex(areaIndex, this.state.areas[areaIndex], this.state.areas[areaIndex].activeLocationIndex, parentFolder)
     return false
   }
 
   changeDirectory(e) {
     const el = document.activeElement
-    const p = normalizePath(e.target.href)
+    const p = normalizePath(decodeURI(e.target.href))
     if ($(el).hasClass('folder')) {
       const areaIndex = $(el).data('area-index')
       this.state.areas[areaIndex].contents.directories = []
@@ -334,16 +335,30 @@ class Home extends Component {
     }
   }
 
-  changeActiveTabIndex(areaIndex, area, newActiveLocationIndex) {
+  focusElement(selectItem) {
+    if (selectItem) {
+      const areaSelector = `.area-${this.state.activeAreaIndex}:first`
+      const area = $(areaSelector)
+      const fileSystemItemSelector = `.filesystem-item:contains('${selectItem}')`
+      const item = area.find(fileSystemItemSelector)
+      item.focus()
+    }
+  }
+
+  changeActiveTabIndex(areaIndex, area, newActiveLocationIndex, selectItem) {
     const newState = this.state
     newState.activeAreaIndex = areaIndex
     newState.areas[areaIndex].activeLocationIndex = newActiveLocationIndex
     newState.areas[areaIndex].contents.directories = []
     this.setState(newState)
-    const dir = `${newState.areas[areaIndex].locations[newActiveLocationIndex]}`
+    const dir = decodeURI(newState.areas[areaIndex].locations[newActiveLocationIndex])
 
     const getDirs = function (rootDir, cb) {
       fs.readdir(rootDir, (err, files) => {
+        if (err) {
+          alert(err)
+          return
+        }
         const dirs = []
         const filenames = []
         for (let index = 0; index < files.length; ++index) {
@@ -362,7 +377,7 @@ class Home extends Component {
                   filenames.push(stat)
                 }
                 if (files.length === (this.index + 1)) {
-                  return cb({ directories: dirs, files: filenames })
+                  return cb({ directories: dirs, files: filenames, selectItem })
                 }
               }
             }.bind({ index, file }))
@@ -372,8 +387,10 @@ class Home extends Component {
     }
 
     getDirs(dir, (contents) => {
+      contents.focusElement = selectItem
       newState.areas[areaIndex].contents = contents
       this.setState(newState)
+      this.focusElement(selectItem)
     })
   }
 
