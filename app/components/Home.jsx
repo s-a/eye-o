@@ -16,6 +16,9 @@ const xterm = new Terminal()
 // Notice it's called statically on the type, not an object
 Terminal.loadAddon('fit')
 
+function normalizePath(dir) {
+  return path.resolve(dir.replace(/file:\/\/\//, '')).replace(/\\/g, '/')
+}
 
 function formatDate(date) {
   return (date || '').toLocaleString().replace(/,/g, ' ')
@@ -157,7 +160,7 @@ class Home extends Component {
       const areaIndex = self.state.activeAreaIndex
       const locationIndex = self.state.areas[areaIndex].activeLocationIndex
       let p = self.state.areas[areaIndex].locations[locationIndex]
-      p = path.join(p, '..')
+      p = normalizePath(path.join(p, '..'))
       self.setPath.bind(self)(areaIndex, p)
       return false
     })
@@ -168,8 +171,8 @@ class Home extends Component {
       return false
     })
 
-    this.changeActiveTabIndex(0, this.state.areas[0], 1)
     this.changeActiveTabIndex(1, this.state.areas[1], 0)
+    this.changeActiveTabIndex(0, this.state.areas[0], 1)
 
     $(window).resize(() => { // On resize
       $('.file-system-view').each(function eachFileSystemView() {
@@ -252,9 +255,11 @@ class Home extends Component {
 
   changeDirectory(e) {
     const el = document.activeElement
-    const p = path.resolve(e.target.href.replace(/file:\/\/\//, '')).replace(/\\/g, '/')
+    const p = normalizePath(e.target.href)
     if ($(el).hasClass('folder')) {
       const areaIndex = $(el).data('area-index')
+      this.state.areas[areaIndex].contents.directories = []
+      this.state.areas[areaIndex].contents.files = []
       this.setPath(areaIndex, p)
       this.focusNextElement()
     }
@@ -315,7 +320,7 @@ class Home extends Component {
       console.log('go')
       x.next().focus()
     }
-    this.setState({ activeAreaIndex: $(document.activeElement).data('area-index') })
+    this.setState({ activeAreaIndex: $(document.activeElement).data('area-index') || this.state.activeAreaIndex })
   }
 
   focusPreviousElement(current) {
