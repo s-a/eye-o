@@ -277,8 +277,9 @@ class Home extends Component {
       this.state.areas[areaIndex].contents.files = []
       this.setPath(areaIndex, p)
       this.focusNextElement()
+      e.preventDefault && e.preventDefault()
     }
-    e.preventDefault && e.preventDefault()
+
     return false
   }
 
@@ -292,6 +293,9 @@ class Home extends Component {
       document.activeElement.blur()
     }
     this.focusNextElement(e)
+    const p = this.state.areas[this.state.activeAreaIndex]
+    const l = p.locations[p.activeLocationIndex]
+    document.title = l
     e.preventDefault()
     return false
   }
@@ -405,7 +409,7 @@ class Home extends Component {
     newState.areas[areaIndex].contents = contents
     this.setState(newState)
     this.focusElement(selectItem)
-
+    document.title = dir
   }
 
   renderTabs(areaIndex, area) {

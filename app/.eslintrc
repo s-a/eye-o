@@ -20,6 +20,7 @@
     "flowtype-errors/show-errors": 2,
     "no-plusplus": [0, "never"],
     "no-unused-vars": "warn",
+    "no-unused-expressions": 0,
     "max-len": "warn",
     "prefer-const": "warn",
     "semi": ["error", "never"],
