@@ -132,6 +132,7 @@ class Home extends Component {
       showKeyInfo('shift+s n up', 'Sort files ascending')
       return false
     })
+
     Mousetrap.bind('shift+s n down', (e) => {
       showKeyInfo('shift+s n down', 'Sort files descending')
       return false
@@ -140,6 +141,32 @@ class Home extends Component {
     Mousetrap.bind('down', (e) => {
       showKeyInfo(e)
       self.focusNextElement()
+      return false
+    })
+
+    Mousetrap.bind(['command+tab', 'ctrl+tab'], (e) => {
+      showKeyInfo(e, 'Select next tab.')
+      const state = self.state
+      const area = state.areas[self.state.activeAreaIndex]
+      let newTabIndex = area.activeLocationIndex + 1
+      if (newTabIndex > area.locations.length - 1) {
+        newTabIndex = 0
+      }
+      area.activeLocationIndex = newTabIndex
+      this.changeActiveTabIndex(self.state.activeAreaIndex, area, newTabIndex)
+      return false
+    })
+
+    Mousetrap.bind(['command+shift+tab', 'ctrl+shift+tab'], (e) => {
+      showKeyInfo(e, 'Select previous tab.')
+      const state = self.state
+      const area = state.areas[self.state.activeAreaIndex]
+      let newTabIndex = area.activeLocationIndex - 1
+      if (newTabIndex <= -1) {
+        newTabIndex = area.locations.length - 1
+      }
+      area.activeLocationIndex = newTabIndex
+      this.changeActiveTabIndex(self.state.activeAreaIndex, area, newTabIndex)
       return false
     })
 
