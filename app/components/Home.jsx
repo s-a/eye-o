@@ -6,6 +6,7 @@ import icons from 'file-icons-js'
 import $ from 'jquery'
 import { debug } from 'util'
 
+
 const path = require('path')
 const bytes = require('bytes')
 const pty = require('node-pty')
@@ -128,6 +129,22 @@ class Home extends Component {
   componentDidMount() {
     const self = this
 
+    const extensionPath = path.join(__dirname, '../extensions/')
+    module.paths.push(extensionPath)
+    const extension = require('focus-next-element')
+    Mousetrap.bind(extension.keys, (e) => {
+      showKeyInfo(extension.keys, extension.description)
+      extension.execute.bind(self)($)
+      return false
+    })
+
+    /* 
+    Mousetrap.bind('down', (e) => {
+      showKeyInfo(e)
+      self.focusNextElement()
+      return false
+    })
+     */
     Mousetrap.bind('shift+s n up', (e) => {
       showKeyInfo('shift+s n up', 'Sort files ascending')
       return false
@@ -138,11 +155,6 @@ class Home extends Component {
       return false
     })
 
-    Mousetrap.bind('down', (e) => {
-      showKeyInfo(e)
-      self.focusNextElement()
-      return false
-    })
 
     Mousetrap.bind(['command+tab', 'ctrl+tab'], (e) => {
       showKeyInfo(e, 'Select next tab.')
@@ -156,6 +168,7 @@ class Home extends Component {
       this.changeActiveTabIndex(self.state.activeAreaIndex, area, newTabIndex)
       return false
     })
+
 
     Mousetrap.bind(['command+shift+tab', 'ctrl+shift+tab'], (e) => {
       showKeyInfo(e, 'Select previous tab.')
